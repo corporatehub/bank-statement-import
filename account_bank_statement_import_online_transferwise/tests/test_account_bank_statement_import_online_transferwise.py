@@ -1,5 +1,5 @@
 # Copyright 2019 Brainbean Apps (https://brainbeanapps.com)
-# Copyright 2020 CorporateHub (https://corporatehub.eu)
+# Copyright 2020-2021 CorporateHub (https://corporatehub.eu)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import json
@@ -67,7 +67,7 @@ class TestAccountBankAccountStatementImportOnlineTransferwise(common.Transaction
             _provider_class + "._transferwise_retrieve", return_value=mocked_response,
         ):
             values_transferwise_profile = self.OnlineBankStatementProvider.with_context(
-                {"api_base": "https://example.com", "api_key": "dummy",}
+                {"api_base": "https://example.com", "api_key": "dummy"}
             ).values_transferwise_profile()
         self.assertEqual(
             values_transferwise_profile,

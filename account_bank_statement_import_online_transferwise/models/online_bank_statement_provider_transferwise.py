@@ -1,5 +1,5 @@
 # Copyright 2019 Brainbean Apps (https://brainbeanapps.com)
-# Copyright 2020 CorporateHub (https://corporatehub.eu)
+# Copyright 2020-2021 CorporateHub (https://corporatehub.eu)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
 import itertools
@@ -34,7 +34,7 @@ class OnlineBankStatementProviderTransferwise(models.Model):
         try:
             url = api_base + "/v1/profiles"
             data = self._transferwise_retrieve(url, api_key)
-        except:
+        except BaseException:
             _logger.warning("Unable to get profiles", exc_info=True)
             return []
         return list(
@@ -56,7 +56,6 @@ class OnlineBankStatementProviderTransferwise(models.Model):
             ("transferwise", "TransferWise.com"),
         ]
 
-    @api.multi
     def _obtain_statement_data(self, date_since, date_until):
         self.ensure_one()
         if self.service != "transferwise":
@@ -137,7 +136,7 @@ class OnlineBankStatementProviderTransferwise(models.Model):
             )
         )
 
-        return lines, {"balance_start": balance_start, "balance_end_real": balance_end,}
+        return lines, {"balance_start": balance_start, "balance_end_real": balance_end}
 
     @api.model
     def _transferwise_preparse_transaction(self, transaction):
@@ -169,9 +168,7 @@ class OnlineBankStatementProviderTransferwise(models.Model):
             fees_value = fees_value.copy_sign(amount_value)
         amount_value -= fees_value
         unique_import_id = "{}-{}-{}".format(
-            transaction_type,
-            reference_number,
-            int(date.timestamp()),
+            transaction_type, reference_number, int(date.timestamp()),
         )
         line = {
             "name": payment_reference or description or "",
@@ -182,28 +179,18 @@ class OnlineBankStatementProviderTransferwise(models.Model):
         }
         if recipient:
             if "name" in recipient:
-                line.update(
-                    {"partner_name": recipient["name"],}
-                )
+                line.update({"partner_name": recipient["name"]})
             if "bankAccount" in recipient:
-                line.update(
-                    {"account_number": recipient["bankAccount"],}
-                )
+                line.update({"account_number": recipient["bankAccount"]})
         elif "merchant" in details:
             merchant = details["merchant"]
             if "name" in merchant:
-                line.update(
-                    {"partner_name": merchant["name"],}
-                )
+                line.update({"partner_name": merchant["name"]})
         else:
             if "senderName" in details:
-                line.update(
-                    {"partner_name": details["senderName"],}
-                )
+                line.update({"partner_name": details["senderName"]})
             if "senderAccount" in details:
-                line.update(
-                    {"account_number": details["senderAccount"],}
-                )
+                line.update({"account_number": details["senderAccount"]})
         if exchange_details:
             to_amount = exchange_details["toAmount"]
             from_amount = exchange_details["fromAmount"]
